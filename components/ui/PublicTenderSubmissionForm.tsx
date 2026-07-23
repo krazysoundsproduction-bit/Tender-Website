@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { PNG_PROVINCES, TENDER_CATEGORIES } from "@/types";
 import LogoUploadField from "@/components/ui/LogoUploadField";
-import { TENDER_CATEGORIES, PNG_PROVINCES } from "@/types";
-import type { Tender } from "@/types";
-
-interface TenderFormProps {
-  tender?: Tender;
-}
 
 function buildTenderDescription(form: {
   tender_reference_number: string;
@@ -63,36 +56,24 @@ ${form.pre_tender_conference}
 - **Phone:** ${form.clarification_phone}`;
 }
 
-export default function TenderForm({ tender }: TenderFormProps) {
-  const router = useRouter();
-  const isEditing = Boolean(tender);
-
-  const toDateTimeLocal = (isoString?: string) => {
-    if (!isoString) return "";
-    const d = new Date(isoString);
-    return d.toISOString().slice(0, 16);
-  };
-
-  const toIsoOrNow = (dateValue?: string) => {
-    if (!dateValue) return new Date().toISOString();
-    const parsed = new Date(dateValue);
-    return Number.isNaN(parsed.getTime())
-      ? new Date().toISOString()
-      : parsed.toISOString();
-  };
-
+export default function PublicTenderSubmissionForm() {
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    title: tender?.title ?? "",
-    organization: tender?.organization ?? "",
-    company_logo_url: tender?.company_logo_url ?? "",
-    category: tender?.category ?? TENDER_CATEGORIES[0],
-    location: tender?.location ?? PNG_PROVINCES[0],
-    closing_date: toDateTimeLocal(tender?.closing_date),
+    submitter_name: "",
+    submitter_email: "",
+    title: "",
+    organization: "",
+    company_logo_url: "",
+    category: TENDER_CATEGORIES[0],
+    location: PNG_PROVINCES[0],
+    closing_date: "",
     tender_reference_number: "",
-    project_title: tender?.title ?? "",
-    procuring_entity: tender?.organization ?? "",
+    project_title: "",
+    procuring_entity: "",
     date_of_issuance: "",
-    scope_of_work: tender?.description ?? "",
+    scope_of_work: "",
     estimated_duration: "",
     eligibility_requirements: "",
     document_collection: "",
@@ -104,12 +85,17 @@ export default function TenderForm({ tender }: TenderFormProps) {
     clarification_contact_person: "",
     clarification_email: "",
     clarification_phone: "",
-    document_url: tender?.document_url ?? "",
-    source_url: tender?.source_url ?? "",
+    document_url: "",
+    source_url: "",
   });
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const toIsoOrNow = (dateValue?: string) => {
+    if (!dateValue) return new Date().toISOString();
+    const parsed = new Date(dateValue);
+    return Number.isNaN(parsed.getTime())
+      ? new Date().toISOString()
+      : parsed.toISOString();
+  };
 
   function handleChange(
     e: React.ChangeEvent<
@@ -121,8 +107,9 @@ export default function TenderForm({ tender }: TenderFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
+    setSuccess("");
 
     const description = buildTenderDescription({
       tender_reference_number: form.tender_reference_number.trim(),
@@ -143,38 +130,62 @@ export default function TenderForm({ tender }: TenderFormProps) {
       clarification_phone: form.clarification_phone.trim(),
     });
 
-    const supabase = createClient();
-
     const payload = {
+      ...form,
+      submitter_name: form.submitter_name.trim() || "Anonymous",
+      submitter_email: form.submitter_email.trim() || "unknown@example.com",
       title: form.project_title.trim() || "Untitled Tender",
       organization: form.procuring_entity.trim() || "Not specified",
-      company_logo_url: form.company_logo_url.trim() || null,
-      category: form.category || "Other",
-      location: form.location || "Nationwide",
-      closing_date: toIsoOrNow(form.closing_date),
       description,
+      company_logo_url: form.company_logo_url.trim() || null,
+      closing_date: toIsoOrNow(form.closing_date),
       document_url: form.document_url.trim() || null,
       source_url: form.source_url.trim() || null,
     };
 
-    let dbError;
-    if (isEditing && tender) {
-      ({ error: dbError } = await supabase
-        .from("tenders")
-        .update(payload)
-        .eq("id", tender.id));
-    } else {
-      ({ error: dbError } = await supabase.from("tenders").insert(payload));
-    }
+    const response = await fetch("/api/submissions/tenders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-    if (dbError) {
-      setError(dbError.message);
+    const result = await response.json();
+    if (!response.ok) {
+      setError(result.error ?? "Submission failed.");
       setLoading(false);
       return;
     }
 
-    router.push("/admin/tenders");
-    router.refresh();
+    setSuccess("Your tender has been submitted for admin review.");
+    setForm({
+      submitter_name: "",
+      submitter_email: "",
+      title: "",
+      organization: "",
+      company_logo_url: "",
+      category: TENDER_CATEGORIES[0],
+      location: PNG_PROVINCES[0],
+      closing_date: "",
+      tender_reference_number: "",
+      project_title: "",
+      procuring_entity: "",
+      date_of_issuance: "",
+      scope_of_work: "",
+      estimated_duration: "",
+      eligibility_requirements: "",
+      document_collection: "",
+      pre_tender_conference: "",
+      submission_email: "",
+      email_subject_line: "",
+      file_format_rules: "",
+      submission_deadline: "",
+      clarification_contact_person: "",
+      clarification_email: "",
+      clarification_phone: "",
+      document_url: "",
+      source_url: "",
+    });
+    setLoading(false);
   }
 
   return (
@@ -183,13 +194,44 @@ export default function TenderForm({ tender }: TenderFormProps) {
       noValidate
       className="bg-white border rounded-xl shadow-sm p-6 space-y-4"
     >
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 text-sm">
+          {success}
+        </div>
+      )}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
           {error}
         </div>
       )}
 
-      <Section title="1. Basic Tender Details" defaultOpen>
+      <Section title="1. Contact Details" defaultOpen>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Your Name" required>
+            <input
+              name="submitter_name"
+              type="text"
+              required
+              value={form.submitter_name}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Your Email" required>
+            <input
+              name="submitter_email"
+              type="email"
+              required
+              value={form.submitter_email}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+      </Section>
+
+      <Section title="2. Basic Tender Details" defaultOpen>
       <Field label="Tender Title" required>
         <input
           name="project_title"
@@ -197,7 +239,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           required
           value={form.project_title}
           onChange={handleChange}
-          placeholder="e.g. Supply of Medical Equipment"
           className={inputClass}
         />
       </Field>
@@ -214,7 +255,7 @@ export default function TenderForm({ tender }: TenderFormProps) {
       </Field>
       </Section>
 
-      <Section title="2. Scope And Requirements" defaultOpen>
+      <Section title="3. Scope And Requirements" defaultOpen>
 
       <Field label="Organisation" required>
         <input
@@ -223,7 +264,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           required
           value={form.procuring_entity}
           onChange={handleChange}
-          placeholder="e.g. Department of Health"
           className={inputClass}
         />
       </Field>
@@ -243,7 +283,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.tender_reference_number}
             onChange={handleChange}
-            placeholder="e.g. ITT-2026-042"
             className={inputClass}
           />
         </Field>
@@ -255,7 +294,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.date_of_issuance}
             onChange={handleChange}
-            placeholder="e.g. 23 July 2026"
             className={inputClass}
           />
         </Field>
@@ -265,30 +303,28 @@ export default function TenderForm({ tender }: TenderFormProps) {
         <Field label="Category" required>
           <select
             name="category"
-            required
             value={form.category}
             onChange={handleChange}
             className={inputClass}
           >
-            {TENDER_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {TENDER_CATEGORIES.map((item) => (
+              <option key={item} value={item}>
+                {item}
               </option>
             ))}
           </select>
         </Field>
 
-        <Field label="Location / Province" required>
+        <Field label="Location" required>
           <select
             name="location"
-            required
             value={form.location}
             onChange={handleChange}
             className={inputClass}
           >
-            {PNG_PROVINCES.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {PNG_PROVINCES.map((item) => (
+              <option key={item} value={item}>
+                {item}
               </option>
             ))}
           </select>
@@ -302,13 +338,12 @@ export default function TenderForm({ tender }: TenderFormProps) {
           rows={5}
           value={form.scope_of_work}
           onChange={handleChange}
-          placeholder="Write introduction and project scope of work."
           className={`${inputClass} resize-y`}
         />
       </Field>
       </Section>
 
-      <Section title="3. Submission And Clarifications" defaultOpen>
+      <Section title="4. Submission And Clarifications" defaultOpen>
 
       <Field label="Estimated Duration" required>
         <input
@@ -317,7 +352,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           required
           value={form.estimated_duration}
           onChange={handleChange}
-          placeholder="e.g. 6 Months"
           className={inputClass}
         />
       </Field>
@@ -329,7 +363,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           rows={5}
           value={form.eligibility_requirements}
           onChange={handleChange}
-          placeholder="List mandatory bidder documents and requirements."
           className={`${inputClass} resize-y`}
         />
       </Field>
@@ -341,7 +374,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           rows={4}
           value={form.document_collection}
           onChange={handleChange}
-          placeholder="Explain how bidders request or download documents."
           className={`${inputClass} resize-y`}
         />
       </Field>
@@ -353,7 +385,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           rows={4}
           value={form.pre_tender_conference}
           onChange={handleChange}
-          placeholder="Include date, time, and venue or meeting link."
           className={`${inputClass} resize-y`}
         />
       </Field>
@@ -366,7 +397,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.submission_email}
             onChange={handleChange}
-            placeholder="tenders@company.com"
             className={inputClass}
           />
         </Field>
@@ -378,7 +408,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.email_subject_line}
             onChange={handleChange}
-            placeholder="TENDER SUBMISSION: [Ref] - [Project] - [Company]"
             className={inputClass}
           />
         </Field>
@@ -391,7 +420,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           required
           value={form.file_format_rules}
           onChange={handleChange}
-          placeholder="e.g. PDF only, ZIP allowed for large files"
           className={inputClass}
         />
       </Field>
@@ -403,7 +431,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
           required
           value={form.submission_deadline}
           onChange={handleChange}
-          placeholder="e.g. 30 Aug 2026 at 5:00 PM"
           className={inputClass}
         />
       </Field>
@@ -416,7 +443,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.clarification_contact_person}
             onChange={handleChange}
-            placeholder="Procurement Officer"
             className={inputClass}
           />
         </Field>
@@ -428,7 +454,6 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.clarification_email}
             onChange={handleChange}
-            placeholder="procurement@company.com"
             className={inputClass}
           />
         </Field>
@@ -440,85 +465,67 @@ export default function TenderForm({ tender }: TenderFormProps) {
             required
             value={form.clarification_phone}
             onChange={handleChange}
-            placeholder="+675 ..."
             className={inputClass}
           />
         </Field>
       </div>
-      </Section>
+        </Section>
 
-      <Section title="4. Preview And Attachments" defaultOpen>
-        <Field label="Generated Tender Notice" required>
-          <textarea
-            readOnly
-            rows={14}
-            value={buildTenderDescription({
-              tender_reference_number: form.tender_reference_number,
-              project_title: form.project_title,
-              procuring_entity: form.procuring_entity,
-              date_of_issuance: form.date_of_issuance,
-              scope_of_work: form.scope_of_work,
-              estimated_duration: form.estimated_duration,
-              eligibility_requirements: form.eligibility_requirements,
-              document_collection: form.document_collection,
-              pre_tender_conference: form.pre_tender_conference,
-              submission_email: form.submission_email,
-              email_subject_line: form.email_subject_line,
-              file_format_rules: form.file_format_rules,
-              submission_deadline: form.submission_deadline,
-              clarification_contact_person: form.clarification_contact_person,
-              clarification_email: form.clarification_email,
-              clarification_phone: form.clarification_phone,
-            })}
-            className={`${inputClass} resize-y`}
-          />
-        </Field>
+        <Section title="5. Preview And Links" defaultOpen>
+          <Field label="Generated Tender Notice" required>
+            <textarea
+              readOnly
+              rows={14}
+              value={buildTenderDescription({
+                tender_reference_number: form.tender_reference_number,
+                project_title: form.project_title,
+                procuring_entity: form.procuring_entity,
+                date_of_issuance: form.date_of_issuance,
+                scope_of_work: form.scope_of_work,
+                estimated_duration: form.estimated_duration,
+                eligibility_requirements: form.eligibility_requirements,
+                document_collection: form.document_collection,
+                pre_tender_conference: form.pre_tender_conference,
+                submission_email: form.submission_email,
+                email_subject_line: form.email_subject_line,
+                file_format_rules: form.file_format_rules,
+                submission_deadline: form.submission_deadline,
+                clarification_contact_person: form.clarification_contact_person,
+                clarification_email: form.clarification_email,
+                clarification_phone: form.clarification_phone,
+              })}
+              className={`${inputClass} resize-y`}
+            />
+          </Field>
 
-        <Field label="Document URL (optional)">
-          <input
-            name="document_url"
-            type="url"
-            value={form.document_url}
-            onChange={handleChange}
-            placeholder="https://..."
-            className={inputClass}
-          />
-        </Field>
+          <Field label="Document URL (optional)">
+            <input
+              name="document_url"
+              type="url"
+              value={form.document_url}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </Field>
 
-        <Field label="Source URL (optional)">
-          <input
-            name="source_url"
-            type="url"
-            value={form.source_url}
-            onChange={handleChange}
-            placeholder="https://..."
-            className={inputClass}
-          />
-        </Field>
-      </Section>
+          <Field label="Source URL (optional)">
+            <input
+              name="source_url"
+              type="url"
+              value={form.source_url}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </Field>
+        </Section>
 
-      <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex-1 bg-blue-700 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-60"
-        >
-          {loading
-            ? isEditing
-              ? "Saving…"
-              : "Adding…"
-            : isEditing
-              ? "Save Changes"
-              : "Add Tender"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-blue-700 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-60"
+      >
+        {loading ? "Submitting..." : "Submit Tender For Review"}
+      </button>
     </form>
   );
 }

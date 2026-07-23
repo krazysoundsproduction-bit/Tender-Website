@@ -4,6 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+function isAdminUser(user: {
+  email?: string | null;
+  app_metadata?: { role?: string };
+} | null) {
+  if (!user) return false;
+  if (user.app_metadata?.role === "admin") return true;
+
+  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (!user.email) return false;
+  return adminEmails.includes(user.email.toLowerCase());
+}
+
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -17,13 +33,20 @@ export default function LoginForm() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (signInError) {
       setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!isAdminUser(data.user)) {
+      await supabase.auth.signOut();
+      setError("You do not have admin access.");
       setLoading(false);
       return;
     }

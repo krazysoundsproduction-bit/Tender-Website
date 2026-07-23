@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isAdminUser } from "@/lib/auth/admin";
 
 export async function GET(
   _request: NextRequest,
@@ -33,6 +34,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!isAdminUser(user)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { id } = await params;
   const body = await request.json();
   const { data, error } = await supabase
@@ -60,6 +65,10 @@ export async function DELETE(
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!isAdminUser(user)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;

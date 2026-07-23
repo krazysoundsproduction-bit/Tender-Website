@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { JobVacancy } from "@/types";
 
 interface JobCardProps {
@@ -48,6 +49,19 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
 
         <p className="text-sm text-gray-600">{job.company_name}</p>
+
+        {job.company_logo_url && (
+          <div className="w-16 h-16 border rounded-lg p-1 bg-white">
+            <Image
+              src={job.company_logo_url}
+              alt={`${job.company_name} logo`}
+              width={56}
+              height={56}
+              unoptimized
+              className="w-full h-full object-contain"
+            />
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2 mt-auto">
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${typeClass}`}>

@@ -22,6 +22,24 @@ export default function Navbar() {
             >
               Jobs
             </Link>
+            <Link
+              href="/submit"
+              className="text-sm sm:text-base hover:text-yellow-400 transition-colors"
+            >
+              Submit
+            </Link>
+            <Link
+              href="/contact"
+              className="text-sm sm:text-base hover:text-yellow-400 transition-colors"
+            >
+              Contact
+            </Link>
+            <Link
+              href="/admin/login"
+              className="text-sm sm:text-base font-semibold text-yellow-300 hover:text-yellow-200 transition-colors"
+            >
+              Admin Login
+            </Link>
           </div>
         </div>
       </div>

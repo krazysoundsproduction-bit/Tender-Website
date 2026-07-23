@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { JobVacancy } from "@/types";
+import { requireAdminUser } from "@/lib/auth/admin";
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("en-PG", {
@@ -15,6 +16,7 @@ function isExpired(d: string) {
 }
 
 export default async function AdminJobsPage() {
+  await requireAdminUser();
   const supabase = await createClient();
   const { data: jobs } = await supabase
     .from("job_vacancies")

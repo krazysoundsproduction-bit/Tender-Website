@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import type { Tender } from "@/types";
 
@@ -108,6 +109,19 @@ export default async function TenderDetailPage({ params }: PageProps) {
             </p>
           </div>
         </div>
+
+        {tender.company_logo_url && (
+          <div className="mb-6 w-28 h-28 border rounded-xl p-2 bg-white">
+            <Image
+              src={tender.company_logo_url}
+              alt={`${tender.organization} logo`}
+              width={96}
+              height={96}
+              unoptimized
+              className="w-full h-full object-contain"
+            />
+          </div>
+        )}
 
         <hr className="my-6" />
 

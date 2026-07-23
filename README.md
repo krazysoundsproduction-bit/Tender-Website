@@ -23,6 +23,9 @@ A centralised web platform for browsing, publishing, and managing government and
 - 📤 **Social sharing** — OpenGraph meta tags for Facebook/WhatsApp preview cards
 - 🔐 **Admin panel** — authenticated admin dashboard for managing listings
 - 📄 **Document downloads** — link to PDF tender documents
+- 📬 **Contact admin form** — public phone/email/message contact option
+- 🖼️ **Company logo uploads** — upload logos for tender and job postings
+- 👤 **Admin profile logo** — admin can upload a larger profile logo in panel
 
 ## Database Schema
 
@@ -85,7 +88,31 @@ cp .env.example .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ADMIN_EMAILS=admin@yourdomain.com
+NEXT_PUBLIC_ADMIN_EMAILS=admin@yourdomain.com
 ```
+
+`ADMIN_EMAILS` and `NEXT_PUBLIC_ADMIN_EMAILS` are comma-separated lists used to
+restrict admin access in the app. You can also set `app_metadata.role = "admin"`
+on Supabase users for role-based access.
+
+### 3.1 Apply latest migration
+
+Run the new SQL migration in Supabase SQL editor:
+
+```
+supabase/migrations/002_admin_roles_and_submissions.sql
+supabase/migrations/003_contact_messages.sql
+supabase/migrations/004_company_logos_and_admin_profiles.sql
+```
+
+This migration adds:
+- strict admin-only write access to `tenders` and `job_vacancies`
+- public submission tables (`tender_submissions`, `job_submissions`)
+- approval workflow fields and moderation policies
+- public contact messages table (`contact_messages`) with admin-only inbox access
+- company logo columns + storage bucket policies (`company-logos`)
+- admin profile table for logo management (`admin_profiles`)
 
 ### 4. Run the development server
 
@@ -99,10 +126,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The admin panel is accessible at `/admin/login`. Sign in with the credentials from your Supabase Auth dashboard.
 
+Only users marked as admins (by email env list or Supabase app metadata role)
+can access admin pages and mutation endpoints.
+
 Once logged in you can:
 - View dashboard stats (total and active tenders/jobs)
 - Add, edit, and delete tenders
 - Add, edit, and delete job vacancies
+- Review submitted tenders/jobs in `/admin/submissions`
+- Manage your admin profile logo in `/admin/profile`
+
+## Public Submission Workflow
+
+- Public users can submit listings at `/submit`
+- Submitted listings are stored as pending submissions
+- Admins review submissions in `/admin/submissions`
+- Approving a submission publishes it into the live listings table
+
+## Contact Admin Workflow
+
+- Public users can send a message at `/contact`
+- Required fields are phone number, email, and short message
+- Admins can review incoming messages at `/admin/contact`
 
 ## Deployment (Vercel)
 

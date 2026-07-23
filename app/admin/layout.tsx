@@ -1,20 +1,24 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import Image from "next/image";
+import { getAuthContext, isAdminUser } from "@/lib/auth/admin";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthContext();
+  const isAdmin = isAdminUser(user);
 
-  if (!user) {
-    redirect("/admin/login");
+  if (!isAdmin) {
+    return <>{children}</>;
   }
+
+  const { data: profile } = await supabase
+    .from("admin_profiles")
+    .select("logo_url")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,8 +41,36 @@ export default async function AdminLayout({
             >
               Jobs
             </Link>
+            <Link
+              href="/admin/submissions"
+              className="text-sm hover:text-yellow-400 transition-colors"
+            >
+              Submissions
+            </Link>
+            <Link
+              href="/admin/contact"
+              className="text-sm hover:text-yellow-400 transition-colors"
+            >
+              Contact
+            </Link>
+            <Link
+              href="/admin/profile"
+              className="text-sm hover:text-yellow-400 transition-colors"
+            >
+              Profile
+            </Link>
           </div>
           <div className="flex items-center gap-4 text-sm">
+            {profile?.logo_url ? (
+              <Image
+                src={profile.logo_url}
+                alt="Admin profile logo"
+                width={56}
+                height={56}
+                unoptimized
+                className="rounded-full object-cover border-2 border-yellow-400"
+              />
+            ) : null}
             <span className="text-gray-400 hidden sm:inline">{user.email}</span>
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               ← View Site

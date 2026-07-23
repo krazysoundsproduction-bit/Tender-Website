@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import type { JobVacancy } from "@/types";
 
@@ -96,6 +97,19 @@ export default async function JobDetailPage({ params }: PageProps) {
         </div>
 
         <p className="text-lg text-gray-600 mb-4">{job.company_name}</p>
+
+        {job.company_logo_url && (
+          <div className="mb-4 w-28 h-28 border rounded-xl p-2 bg-white">
+            <Image
+              src={job.company_logo_url}
+              alt={`${job.company_name} logo`}
+              width={96}
+              height={96}
+              unoptimized
+              className="w-full h-full object-contain"
+            />
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2 mb-6">
           <span className={`text-sm font-medium px-3 py-1 rounded-full ${typeClass}`}>

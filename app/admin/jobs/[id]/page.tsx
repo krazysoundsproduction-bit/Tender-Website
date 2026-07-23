@@ -3,12 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import JobForm from "@/components/ui/JobForm";
 import DeleteJobButton from "@/components/ui/DeleteJobButton";
 import type { JobVacancy } from "@/types";
+import { requireAdminUser } from "@/lib/auth/admin";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function EditJobPage({ params }: PageProps) {
+  await requireAdminUser();
   const { id } = await params;
   const supabase = await createClient();
   const { data, error } = await supabase

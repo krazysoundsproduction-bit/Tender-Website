@@ -1,14 +1,9 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import LoginForm from "./LoginForm";
 
 export default async function AdminLoginPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) redirect("/admin");
+  await supabase.auth.getUser();
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">

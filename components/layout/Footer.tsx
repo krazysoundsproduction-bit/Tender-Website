@@ -27,6 +27,16 @@ export default function Footer() {
                   Browse Jobs
                 </Link>
               </li>
+              <li>
+                <Link href="/submit" className="hover:text-white transition-colors">
+                  Submit A Listing
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  Contact Admin
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
