@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-function isAdminUser(user: {
-  email?: string | null;
-  app_metadata?: { role?: string };
-} | null) {
+function isAdminUser(user: User | null) {
   if (!user) return false;
-  if (user.app_metadata?.role === "admin") return true;
+  if ((user.app_metadata as Record<string, unknown>)?.role === "admin") return true;
 
   const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
     .split(",")

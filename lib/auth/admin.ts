@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -17,9 +18,7 @@ export async function getAuthContext() {
   return { supabase, user };
 }
 
-export function isAdminUser(
-  user: { email?: string | null; app_metadata?: Record<string, unknown> } | null
-) {
+export function isAdminUser(user: User | null) {
   if (!user) return false;
 
   if (user.app_metadata?.role === "admin") {

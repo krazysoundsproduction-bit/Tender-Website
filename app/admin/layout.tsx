@@ -10,7 +10,7 @@ export default async function AdminLayout({
   const { supabase, user } = await getAuthContext();
   const isAdmin = isAdminUser(user);
 
-  if (!isAdmin) {
+  if (!isAdmin || !user) {
     return <>{children}</>;
   }
 
