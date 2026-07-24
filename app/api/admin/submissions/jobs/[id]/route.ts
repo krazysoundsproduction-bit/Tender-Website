@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthContext, isAdminUser } from "@/lib/auth/admin";
+import { createAdminClient } from "@/lib/supabase/server";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -72,7 +73,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     source_url: submission.source_url,
   };
 
-  const { data: createdJob, error: createError } = await supabase
+  // Use admin client to bypass RLS policies for creating approved jobs
+  const adminClient = createAdminClient();
+  const { data: createdJob, error: createError } = await adminClient
     .from("job_vacancies")
     .insert(jobPayload)
     .select("id")
