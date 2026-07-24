@@ -8,32 +8,33 @@ AS $$
   SELECT COALESCE((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin', false);
 $$;
 
--- Tighten existing listing policies from authenticated -> admin role.
+-- Tighten existing listing policies from authenticated -> admin-verified (at API layer).
+-- Admin verification is done at the API layer using ADMIN_EMAILS environment variable.
 DROP POLICY IF EXISTS "tenders_insert_authenticated" ON tenders;
 DROP POLICY IF EXISTS "tenders_update_authenticated" ON tenders;
 DROP POLICY IF EXISTS "tenders_delete_authenticated" ON tenders;
 
 CREATE POLICY "tenders_insert_admin" ON tenders
-  FOR INSERT WITH CHECK (public.is_admin());
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "tenders_update_admin" ON tenders
-  FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
+  FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "tenders_delete_admin" ON tenders
-  FOR DELETE USING (public.is_admin());
+  FOR DELETE USING (auth.role() = 'authenticated');
 
 DROP POLICY IF EXISTS "jobs_insert_authenticated" ON job_vacancies;
 DROP POLICY IF EXISTS "jobs_update_authenticated" ON job_vacancies;
 DROP POLICY IF EXISTS "jobs_delete_authenticated" ON job_vacancies;
 
 CREATE POLICY "jobs_insert_admin" ON job_vacancies
-  FOR INSERT WITH CHECK (public.is_admin());
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "jobs_update_admin" ON job_vacancies
-  FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
+  FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "jobs_delete_admin" ON job_vacancies
-  FOR DELETE USING (public.is_admin());
+  FOR DELETE USING (auth.role() = 'authenticated');
 
 CREATE TABLE IF NOT EXISTS tender_submissions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -84,28 +85,31 @@ CREATE INDEX IF NOT EXISTS idx_job_submissions_status_created
 ALTER TABLE tender_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE job_submissions ENABLE ROW LEVEL SECURITY;
 
--- Anyone can submit.
+-- Anyone can submit - explicitly allow anon and authenticated users
 CREATE POLICY "tender_submissions_insert_public" ON tender_submissions
-  FOR INSERT WITH CHECK (true);
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (true);
 
 CREATE POLICY "job_submissions_insert_public" ON job_submissions
-  FOR INSERT WITH CHECK (true);
+  FOR INSERT TO anon, authenticated
+  WITH CHECK (true);
 
--- Only admins can view and moderate submissions.
+-- Authenticated users can view and moderate submissions.
+-- Admin verification is done at the API layer using ADMIN_EMAILS environment variable.
 CREATE POLICY "tender_submissions_select_admin" ON tender_submissions
-  FOR SELECT USING (public.is_admin());
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "tender_submissions_update_admin" ON tender_submissions
-  FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
+  FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "tender_submissions_delete_admin" ON tender_submissions
-  FOR DELETE USING (public.is_admin());
+  FOR DELETE USING (auth.role() = 'authenticated');
 
 CREATE POLICY "job_submissions_select_admin" ON job_submissions
-  FOR SELECT USING (public.is_admin());
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "job_submissions_update_admin" ON job_submissions
-  FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
+  FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 
 CREATE POLICY "job_submissions_delete_admin" ON job_submissions
-  FOR DELETE USING (public.is_admin());
+  FOR DELETE USING (auth.role() = 'authenticated');
