@@ -32,25 +32,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const tender = await getTender(id);
   if (!tender) return { title: "Tender Not Found" };
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://tender-website-lake.vercel.app";
-  const tenderUrl = `${baseUrl}/tenders/${id}`;
-  const description = `${tender.organization} — ${tender.category}. Closes: ${new Date(tender.closing_date).toLocaleDateString("en-PG")}.`;
-
   return {
     title: tender.title,
-    description,
+    description: `${tender.organization} — ${tender.category}. Closes: ${new Date(tender.closing_date).toLocaleDateString("en-PG")}.`,
     openGraph: {
       title: tender.title,
-      description,
+      description: `${tender.organization} | ${tender.category} | Closes ${new Date(tender.closing_date).toLocaleDateString("en-PG")}`,
       type: "article",
-      url: tenderUrl,
-      images: tender.company_logo_url ? [{ url: tender.company_logo_url }] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: tender.title,
-      description,
-      images: tender.company_logo_url ? [tender.company_logo_url] : [],
     },
   };
 }
@@ -173,15 +161,6 @@ export default async function TenderDetailPage({ params }: PageProps) {
             </div>
           </>
         )}
-
-        <hr className="my-6" />
-
-        <ShareButtons
-          title={tender.title}
-          description={`Tender by ${tender.organization} in ${tender.category}`}
-          url={`${process.env.NEXT_PUBLIC_BASE_URL || "https://tender-website-lake.vercel.app"}/tenders/${tender.id}`}
-          type="tender"
-        />
 
         <div className="mt-6 text-xs text-gray-400">
           Posted: {formatDate(tender.created_at)}

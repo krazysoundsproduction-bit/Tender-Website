@@ -174,15 +174,6 @@ export default async function TenderDetailPage({ params }: PageProps) {
           </>
         )}
 
-        <hr className="my-6" />
-
-        <ShareButtons
-          title={tender.title}
-          description={`Tender by ${tender.organization} in ${tender.category}`}
-          url={`${process.env.NEXT_PUBLIC_BASE_URL || "https://tender-website-lake.vercel.app"}/tenders/${tender.id}`}
-          type="tender"
-        />
-
         <div className="mt-6 text-xs text-gray-400">
           Posted: {formatDate(tender.created_at)}
         </div>

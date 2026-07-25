@@ -205,15 +205,6 @@ export default async function JobDetailPage({ params }: PageProps) {
           </>
         )}
 
-        <hr className="my-6" />
-
-        <ShareButtons
-          title={job.job_title}
-          description={`${job.job_type} at ${job.company_name} in ${job.location}`}
-          url={`${process.env.NEXT_PUBLIC_BASE_URL || "https://tender-website-lake.vercel.app"}/jobs/${job.id}`}
-          type="job"
-        />
-
         <div className="mt-6 text-xs text-gray-400">
           Posted: {formatDate(job.created_at)}
         </div>
