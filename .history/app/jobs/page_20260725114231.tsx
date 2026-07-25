@@ -118,7 +118,6 @@ export default async function JobsPage({
               currentJobType={params.jobType}
               currentLocation={params.location}
               currentActiveOnly={activeOnly}
-              currentIsFastJob={params.isFastJob === "1"}
             />
           </Suspense>
         </aside>

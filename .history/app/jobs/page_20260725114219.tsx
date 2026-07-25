@@ -60,10 +60,6 @@ async function getJobs(params: SearchParams): Promise<{
       query = query.eq("location", params.location);
     }
 
-    if (params.isFastJob === "1") {
-      query = query.eq("is_fast_job", true);
-    }
-
     query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
     const { data, count, error } = await query;
@@ -92,7 +88,6 @@ export default async function JobsPage({
     if (params.search) sp.set("search", params.search);
     if (params.jobType) sp.set("jobType", params.jobType);
     if (params.location) sp.set("location", params.location);
-    if (params.isFastJob) sp.set("isFastJob", params.isFastJob);
     sp.set("activeOnly", activeOnly ? "1" : "0");
     sp.set("page", String(p));
     return `/jobs?${sp.toString()}`;
@@ -118,7 +113,6 @@ export default async function JobsPage({
               currentJobType={params.jobType}
               currentLocation={params.location}
               currentActiveOnly={activeOnly}
-              currentIsFastJob={params.isFastJob === "1"}
             />
           </Suspense>
         </aside>

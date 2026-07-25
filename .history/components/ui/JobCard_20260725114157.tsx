@@ -94,49 +94,6 @@ export default function JobCard({ job }: JobCardProps) {
           </span>
         </div>
 
-        {isFastJob && (
-          <div className="flex flex-wrap gap-2 pt-2 border-t">
-            {preferredContact === "Phone" && posterPhone && (
-              <a
-                href={`tel:${posterPhone}`}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 px-2 py-1 rounded transition-colors"
-              >
-                ☎️ Call
-              </a>
-            )}
-            {preferredContact === "WhatsApp" && posterPhone && (
-              <a
-                href={`https://wa.me/${cleanPhoneNumber(posterPhone)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 px-2 py-1 rounded transition-colors"
-              >
-                💬 WhatsApp
-              </a>
-            )}
-            {preferredContact === "SMS" && posterPhone && (
-              <a
-                href={`sms:${posterPhone}`}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 px-2 py-1 rounded transition-colors"
-              >
-                📱 SMS
-              </a>
-            )}
-            {posterEmail && (
-              <a
-                href={`mailto:${posterEmail}`}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 px-2 py-1 rounded transition-colors"
-              >
-                ✉️ Email
-              </a>
-            )}
-          </div>
-        )}
-
         <div className="text-xs text-gray-500">
           Closes:{" "}
           <span

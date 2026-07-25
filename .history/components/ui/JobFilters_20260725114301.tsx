@@ -141,19 +141,6 @@ export default function JobFilters({
         </label>
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
-          id="job-fast"
-          type="checkbox"
-          checked={isFastJob}
-          onChange={(e) => setIsFastJob(e.target.checked)}
-          className="h-4 w-4 text-yellow-600 rounded"
-        />
-        <label htmlFor="job-fast" className="text-sm text-gray-600">
-          ⚡ Fast Job & Pay only
-        </label>
-      </div>
-
       <div className="flex gap-2">
         <button
           type="submit"

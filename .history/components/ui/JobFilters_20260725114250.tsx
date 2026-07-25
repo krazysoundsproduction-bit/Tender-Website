@@ -40,9 +40,6 @@ export default function JobFilters({
     if (location) params.set("location", location);
     else params.delete("location");
 
-    if (isFastJob) params.set("isFastJob", "1");
-    else params.delete("isFastJob");
-
     params.set("activeOnly", activeOnly ? "1" : "0");
     params.delete("page");
 
@@ -59,7 +56,6 @@ export default function JobFilters({
     setJobType("");
     setLocation("");
     setActiveOnly(true);
-    setIsFastJob(false);
     router.push("/jobs");
   }
 
@@ -138,19 +134,6 @@ export default function JobFilters({
         />
         <label htmlFor="job-active" className="text-sm text-gray-600">
           Active listings only (hide expired)
-        </label>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          id="job-fast"
-          type="checkbox"
-          checked={isFastJob}
-          onChange={(e) => setIsFastJob(e.target.checked)}
-          className="h-4 w-4 text-yellow-600 rounded"
-        />
-        <label htmlFor="job-fast" className="text-sm text-gray-600">
-          ⚡ Fast Job & Pay only
         </label>
       </div>
 

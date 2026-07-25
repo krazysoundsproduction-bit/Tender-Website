@@ -127,13 +127,6 @@ export default function PublicJobSubmissionForm() {
       application_email_or_link: applicationContact,
       company_logo_url: form.company_logo_url.trim() || null,
       source_url: form.source_url.trim() || null,
-      is_fast_job: form.is_fast_job || false,
-      payment_amount: form.is_fast_job ? form.payment_amount.trim() : null,
-      completion_timeframe: form.is_fast_job ? form.completion_timeframe.trim() : null,
-      poster_name: form.is_fast_job ? form.poster_name.trim() : null,
-      poster_phone: form.is_fast_job ? form.poster_phone.trim() : null,
-      poster_email: form.is_fast_job ? form.poster_email.trim() : null,
-      preferred_contact: form.is_fast_job ? form.preferred_contact : null,
     };
 
     const response = await fetch("/api/submissions/jobs", {
@@ -169,13 +162,6 @@ export default function PublicJobSubmissionForm() {
       application_email: "",
       application_link: "",
       source_url: "",
-      is_fast_job: false,
-      payment_amount: "",
-      completion_timeframe: "",
-      poster_name: "",
-      poster_phone: "",
-      poster_email: "",
-      preferred_contact: "Email",
     });
     setLoading(false);
   }
@@ -405,106 +391,7 @@ export default function PublicJobSubmissionForm() {
       </Field>
       </Section>
 
-      <Section title="5. Fast Job & Pay (Optional)" defaultOpen={false}>
-        <div className="space-y-4">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              name="is_fast_job"
-              checked={form.is_fast_job}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  is_fast_job: e.target.checked,
-                }))
-              }
-              className="w-4 h-4 rounded border-gray-300 cursor-pointer"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              ⚡ This is a Fast Job & Pay (micro-task)
-            </span>
-          </label>
-
-          {form.is_fast_job && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-                <Field label="Payment Amount" required>
-                  <input
-                    name="payment_amount"
-                    type="text"
-                    value={form.payment_amount}
-                    onChange={handleChange}
-                    placeholder="e.g. K200-K500"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Completion Timeframe" required>
-                  <input
-                    name="completion_timeframe"
-                    type="text"
-                    value={form.completion_timeframe}
-                    onChange={handleChange}
-                    placeholder="e.g. 2-3 days"
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
-                <Field label="Your Name" required>
-                  <input
-                    name="poster_name"
-                    type="text"
-                    value={form.poster_name}
-                    onChange={handleChange}
-                    placeholder="Your name"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Your Phone" required>
-                  <input
-                    name="poster_phone"
-                    type="tel"
-                    value={form.poster_phone}
-                    onChange={handleChange}
-                    placeholder="+675 xxx xxxx"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Your Email" required>
-                  <input
-                    name="poster_email"
-                    type="email"
-                    value={form.poster_email}
-                    onChange={handleChange}
-                    placeholder="your@email.com"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Preferred Contact Method" required>
-                  <select
-                    name="preferred_contact"
-                    value={form.preferred_contact}
-                    onChange={handleChange}
-                    className={inputClass}
-                  >
-                    <option value="Phone">Phone</option>
-                    <option value="WhatsApp">WhatsApp</option>
-                    <option value="SMS">SMS</option>
-                    <option value="Email">Email</option>
-                  </select>
-                </Field>
-              </div>
-            </>
-          )}
-        </div>
-      </Section>
-
-      <Section title="6. Preview" defaultOpen>
+      <Section title="5. Preview" defaultOpen>
         <Field label="Generated Posting Details" required>
           <textarea
             readOnly
@@ -527,7 +414,7 @@ export default function PublicJobSubmissionForm() {
         </Field>
       </Section>
 
-      <Section title="7. Optional: Upload Photos">
+      <Section title="6. Optional: Upload Photos">
         <MultiImageUpload
           onImagesSelect={setImageUrls}
           maxImages={6}

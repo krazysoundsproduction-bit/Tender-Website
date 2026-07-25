@@ -527,7 +527,7 @@ export default function PublicJobSubmissionForm() {
         </Field>
       </Section>
 
-      <Section title="7. Optional: Upload Photos">
+      <Section title="6. Optional: Upload Photos">
         <MultiImageUpload
           onImagesSelect={setImageUrls}
           maxImages={6}
